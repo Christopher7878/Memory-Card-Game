@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory Game - Encuentra los Pares 🌈</title>
+    <style>
+        body {
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.5em;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 20px;
+        }
+
+        .card {
+            width: 100px;
+            height: 100px;
+            background: #FFE66D;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .card::before {
+            content: "❔";
+            position: absolute;
+            color: white;
+        }
+
+        .card.flipped {
+            background: #4ECDC4;
+            transform: rotateY(180deg);
+        }
+
+        .card.flipped::before {
+            content: "";
+        }
+
+        .card.flipped::after {
+            content: attr(data-emoji);
+            transform: rotateY(180deg);
+        }
+
+        .card.matched {
+            background: #45B7AF;
+            transform: scale(0.9) rotateY(180deg);
+            cursor: default;
+        }
+
+        .stats {
+            color: white;
+            font-size: 1.2em;
+            margin: 20px;
+            text-align: center;
+        }
+
+        button {
+            background: #FF6B6B;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        .confetti {
+            position: fixed;
+            font-size: 20px;
+            animation: confetti 2s linear;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌟 Memory Game 🌟</h1>
+    <div class="stats">
+        <p>Intentos: <span id="attempts">0</span></p>
+        <p>Pares encontrados: <span id="score">0</span>/8</p>
+    </div>
+    <div class="game-container" id="game"></div>
+    <button onclick="resetGame()">🔄 Reiniciar Juego</button>
+
+    <script>
+        const emojis = ['🐶', '🐱', '🐻', '🐼', '🦊', '🐯', '🐮', '🐹'];
+        let flippedCards = [];
+        let attempts = 0;
+        let score = 0;
+
+        function createGame() {
+            const gameContainer = document.getElementById('game');
+            const doubledEmojis = [...emojis, ...emojis];
+            doubledEmojis.sort(() => Math.random() - 0.5);
+
+            doubledEmojis.forEach(emoji => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.emoji = emoji;
+                card.addEventListener('click', flipCard);
+                gameContainer.appendChild(card);
+            });
+        }
+
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
+                this.classList.add('flipped');
+                flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                attempts++;
+                document.getElementById('attempts').textContent = attempts;
+                checkMatch();
+            }
+        }
+}
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            
+            if (card1.dataset.emoji === card2.dataset.emoji) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                score++;
+                document.getElementById('score').textContent = score;
+                createConfetti();
+                if (score === 8) showWinMessage();
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                }, 800);
+            }
+            flippedCards = [];
+        }
+
+        function createConfetti() {
+            const emojisConfetti = ['🎉', '🎊', '✨', '💫', '🌸', '🍭'];
+            for (let i = 0; i < 10; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.animationDelay = Math.random() * 1 + 's';
+                confetti.textContent = emojisConfetti[Math.floor(Math.random() * emojisConfetti.length)];
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 2000);
+            }
+        }
+
+        function showWinMessage() {
+            setTimeout(() => {
+                alert(`¡Ganaste! 🎊\nIntentos: ${attempts}`);
+            }, 500);
+        }
+
+        function resetGame() {
+            document.getElementById('game').innerHTML = '';
+            attempts = 0;
+            score = 0;
+            document.getElementById('attempts').textContent = '0';
+            document.getElementById('score').textContent = '0';
+            createGame();
+        }
+
+        // Iniciar juego
+        createGame();
+    </script>
+</body>
+</html>
